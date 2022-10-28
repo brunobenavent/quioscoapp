@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext } from 'react'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const QuioscoContext = createContext()
 
@@ -10,6 +11,7 @@ const QuioscoProvider = ({children}) => {
     const [producto, setProducto] = useState({})
     const [modal, setModal] = useState(false)
     const [pedido, setPedido] = useState([])
+    const [steps, setSteps] = useState(1)
  
 
     const handleSetCategoriaActual = id => {
@@ -17,14 +19,48 @@ const QuioscoProvider = ({children}) => {
         setCategoriaActual(categoria)
         
     }
-    const handelSetProducto = ({categoriaId, imagen, ...producto}) => {
+    const handleSetProducto = ({categoriaId, ...producto}) => {
         setProducto(producto)
     }
 
     const handelSetModal = () => setModal(!modal)
     const handleSetPedido = producto => {
-        setPedido( [...pedido, producto])
+        let ExisteProductoPedido = pedido.some(productoState => productoState.id === producto.id)
+
+        if(ExisteProductoPedido){
+            const pedidoActualizado = pedido.map(productoState => productoState.id === producto.id ? producto : productoState)
+            
+            setPedido( pedidoActualizado) 
+            toast.success('Guardado correctamente', {
+                position: "top-right",
+                autoClose: 1500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                })  
+            
+        }else{
+            setPedido( [...pedido, producto])
+            toast.success('Agregado al pedido', {
+                position: "top-right",
+                autoClose: 1500,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                })   
+            
+
+        }
+        setModal(false)
+        
     }
+    const handleSetStep = step => setSteps(step)
 
     useEffect(() => {
         const obtenerCategorias = async () => {
@@ -45,11 +81,13 @@ const QuioscoProvider = ({children}) => {
                 handleSetCategoriaActual,
                 categoriaActual,
                 producto,
-                handelSetProducto,
+                handleSetProducto,
                 modal,
                 handelSetModal,
                 pedido,
-                handleSetPedido
+                handleSetPedido,
+                handleSetStep,
+                steps
             }}
         >
             {children}

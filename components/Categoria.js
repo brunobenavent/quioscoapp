@@ -1,9 +1,13 @@
 import Image from "next/image";
+import { useRouter } from "next/router";
 import useQuiosco from "../hooks/useQuiosco";
 
 const Categoria = ({ categoria }) => {
   const {id, nombre, icono} = categoria
   const {categoriaActual, handleSetCategoriaActual} = useQuiosco()
+
+  const router = useRouter()
+
   return (
     <div className={`${categoriaActual?.id===id ? 'bg-amber-400' : ''} flex transition-colors items-center gap-4 w-full border p-5 hover:bg-amber-400`}>
         <Image
@@ -15,7 +19,10 @@ const Categoria = ({ categoria }) => {
       <button
         type="button"
         className="font-bold text-2xl hover:cursor-pointer"
-        onClick={() => handleSetCategoriaActual(id)}
+        onClick={() => {
+          handleSetCategoriaActual(id)
+          router.push('/')
+        }}
       >
         {nombre}
       </button>
