@@ -52,6 +52,7 @@ export default function Layout({ children, pagina }) {
           <ModalProducto />
         </Modal>
       )}
+      
       <ToastContainer />
     </>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { formatearDinero } from '../helpers'
 
 const QuioscoContext = createContext()
 
@@ -12,18 +13,38 @@ const QuioscoProvider = ({children}) => {
     const [modal, setModal] = useState(false)
     const [pedido, setPedido] = useState([])
     const [steps, setSteps] = useState(1)
+    const [nombre, setNombre] = useState('')
+    const [total, setTotal] = useState(0)
+
+
  
+    useEffect(() => {
+        const obtenerCategorias = async () => {
+            const { data } = await axios('/api/categorias')
+            setCategorias(data)
+        }
+        obtenerCategorias()
+    }, [])
+
+    useEffect(() => {
+        setCategoriaActual(categorias[0])
+    }, [categorias])
+
+    useEffect(() =>{
+        const totalAPagar = pedido.reduce((total, producto) => total + (producto.cantidad * producto.precio), 0)
+
+        setTotal(formatearDinero(totalAPagar))
+    }, [pedido])
 
     const handleSetCategoriaActual = id => {
         const categoria = categorias.find(cat => cat.id ===id)
         setCategoriaActual(categoria)
         
     }
-    const handleSetProducto = ({categoriaId, ...producto}) => {
-        setProducto(producto)
-    }
+    const handleSetProducto = ({categoriaId, ...producto}) => setProducto(producto)
 
     const handelSetModal = () => setModal(!modal)
+
     const handleSetPedido = producto => {
         let ExisteProductoPedido = pedido.some(productoState => productoState.id === producto.id)
 
@@ -62,18 +83,22 @@ const QuioscoProvider = ({children}) => {
     }
     const handleSetStep = step => setSteps(step)
 
-    useEffect(() => {
-        const obtenerCategorias = async () => {
-            const { data } = await axios('/api/categorias')
-            setCategorias(data)
-        }
-        obtenerCategorias()
-    }, [])
+    const handleEditarCantidades = id =>{
+        setModal(true)
+        const productoActualizar = pedido.find(producto => producto.id=== id)
+        setProducto(productoActualizar)
+    }
+    const handleEliminarProducto = id => {
+        const pedidoActualizado = pedido.filter(producto => producto.id !== id)
+        setPedido(pedidoActualizado)
+    }
+    const colocarOrden = e =>{
+        e.preventDefault()
+        console.log('enviando orden')
 
-    useEffect(() => {
-        setCategoriaActual(categorias[0])
-    }, [categorias])
-
+    }
+    
+   
     return(
         <QuioscoContext.Provider
             value={{
@@ -87,7 +112,14 @@ const QuioscoProvider = ({children}) => {
                 pedido,
                 handleSetPedido,
                 handleSetStep,
-                steps
+                steps,
+                handleEditarCantidades,
+                handleEliminarProducto,
+                nombre,
+                setNombre,
+                total,
+                setTotal,
+                colocarOrden
             }}
         >
             {children}
